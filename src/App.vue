@@ -1,28 +1,62 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js App"/>
+    <nav class="navbar is-light" role="navigation" aria-label="main navigation">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="#">
+            <span class="title is-size-1">ToDo List</span>
+          </a>
+        </div>
+      </div>
+    </nav>
+    <br />
+    <br />
+    <div class="container">
+      <div v-if="notes">
+        <CreateNoteModal @createNote="createNote" />
+        <br />
+        <div>
+          <noteItem
+            v-for="(note, index) in notes"
+            :note="note"
+            :key="index"
+            @deleteNote="deleteNote"
+            @updateNote="updateNote"
+          />
+        </div>
+      </div>
+    </div>
   </div>
 </template>
-
 <script>
-import HelloWorld from './components/HelloWorld.vue'
-
+import NoteItem from "./components/NoteItem.vue";
+import CreateNoteModal from "./components/CreateNoteModal.vue";
+import { getNotes } from "./repository";
 export default {
-  name: 'App',
-  components: {
-    HelloWorld
+  name: "app",
+  components: { NoteItem, CreateNoteModal },
+  data() {
+    return {
+      notes: []
+    };
+  },
+  methods: {
+    deleteNote(id) {
+      let notes = this.notes.filter(note => note._id != id);
+      this.notes = notes;
+    },
+    updateNote(note) {
+      this.deleteNote(note._id);
+      this.createNote(note);
+    },
+    createNote(note) {
+      this.notes = [...this.notes, note];
+    }
+  },
+  mounted() {
+    getNotes()
+      .then(data => (this.notes = data.notes))
+      .catch(err => alert(err));
   }
-}
+};
 </script>
-
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
